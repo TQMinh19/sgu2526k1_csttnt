@@ -1,158 +1,139 @@
-# Bài 2: MÊ CUNG - Tìm đường đi từ 0 đến A
-
-from collections import deque
 import sys
+from collections import deque
 
-# ===== ĐỊNH NGHĨA MÊ CUNG =====
 class MazeProblem:
     def __init__(self):
-        # Mê cung 5 hàng x 4 cột
-        # 0 = đường, 1 = tường
-        # 0 = điểm bắt đầu (góc trên-trái)
-        # A = điểm kết thúc (góc dưới-phải)
-        
-        self.maze = [
-            [0, 0, 0, 0],
-            [1, 1, 0, 1],
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 'A']
+        # Cấu hình Mê cung 6x6
+        self.rows = 6
+        self.cols = 6
+        self.start = (0, 0)      
+        self.goal = (5, 5)
+
+        # 1. Tường Dọc (Vertical Walls)
+        # v_walls[r][c] = 1 nghĩa là có tường chắn giữa cột c và c+1
+        self.v_walls = [
+            [0, 1, 0, 0, 0], 
+            [0, 1, 0, 0, 0], 
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0], 
+            [0, 1, 0, 0, 0]  
         ]
         
-        self.rows = len(self.maze)
-        self.cols = len(self.maze[0])
-        self.start = (0, 0)      # Vị trí 0
-        self.goal = (4, 3)       # Vị trí A
-        
-        # 4 hướng: Trên, Dưới, Trái, Phải
-        self.directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        self.direction_names = ["Up", "Down", "Left", "Right"]
-    
-    def is_valid(self, row, col, visited):
-        """Kiểm tra vị trí có hợp lệ không"""
-        return (0 <= row < self.rows and 
-                0 <= col < self.cols and 
-                self.maze[row][col] != 1 and 
-                (row, col) not in visited)
+        # 2. Tường Ngang (Horizontal Walls)
+        # h_walls[r][c] = 1 nghĩa là có tường chắn giữa hàng r và r+1
+        self.h_walls = [
+            [0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1], # Tường chặn ở hàng 2 xuống hàng 3 (cột 4,5)
+            [0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0]
+        ]
     
     def get_neighbors(self, pos):
-        """Lấy các vị trí lân cận hợp lệ"""
-        row, col = pos
+        """Lấy các vị trí lân cận hợp lệ (có kiểm tra tường chắn)"""
+        r, c = pos
         neighbors = []
         
-        for i, (dr, dc) in enumerate(self.directions):
-            new_row, new_col = row + dr, col + dc
-            if self.is_valid(new_row, new_col, set()):
-                neighbors.append(((new_row, new_col), self.direction_names[i]))
-        
+        # 1. Đi LÊN (Up) -> Check tường ngang phía trên
+        if r > 0 and self.h_walls[r-1][c] == 0:
+            neighbors.append((r - 1, c))
+            
+        # 2. Đi XUỐNG (Down) -> Check tường ngang phía dưới
+        if r < self.rows - 1 and self.h_walls[r][c] == 0:
+            neighbors.append((r + 1, c))
+            
+        # 3. Đi TRÁI (Left) -> Check tường dọc bên trái
+        if c > 0 and self.v_walls[r][c-1] == 0:
+            neighbors.append((r, c - 1))
+            
+        # 4. Đi PHẢI (Right) -> Check tường dọc bên phải
+        if c < self.cols - 1 and self.v_walls[r][c] == 0:
+            neighbors.append((r, c + 1))
+            
         return neighbors
-    
-    def print_maze(self, path=None):
-        """In mê cung ra màn hình"""
-        print("\n MÊ CUNG (5x4):")
-        print("    0 = đường, 1 = tường")
-        print("    0 = điểm bắt đầu, A = điểm kết thúc\n")
-        
-        for i in range(self.rows):
-            for j in range(self.cols):
-                cell = self.maze[i][j]
-                
-                # Tô đỏ đường đi nếu có
-                if path and (i, j) in path:
-                    if (i, j) == self.start:
-                        print("start", end=" ")  # Điểm bắt đầu
-                    elif (i, j) == self.goal:
-                        print("end", end=" ")  # Điểm kết thúc
-                    else:
-                        print("way", end=" ")  # Đường đi
-                else:
-                    if (i, j) == self.start:
-                        print("start", end=" ")
-                    elif (i, j) == self.goal:
-                        print("end", end=" ")
-                    elif cell == 0:
-                        print("path", end=" ")
-                    else:
-                        print("wall", end=" ")
-            print()
 
-# ===== THUẬT TOÁN BFS =====
+    def print_maze(self, path=None):
+        """Hàm vẽ mê cung ra màn hình dạng text (giống hình bạn gửi)"""
+        path_set = set(path) if path else set()
+        
+        print("\n MÊ CUNG 6x6 (Kết quả):")
+        
+        # 1. Vẽ cạnh trên cùng
+        print("  " + "+---" * self.cols + "+")
+        
+        for r in range(self.rows):
+            # --- In nội dung ô và tường dọc ---
+            line_content = "  |" # Viền trái
+            for c in range(self.cols):
+                # Nội dung ô: S, E, ● (đường đi)
+                symbol = "   "
+                if (r, c) == self.start:
+                    symbol = " S "
+                elif (r, c) == self.goal:
+                    symbol = " E "
+                elif (r, c) in path_set:
+                    symbol = " ● " # Dấu chấm
+                
+                line_content += symbol
+                
+                # Tường dọc bên phải?
+                if c < self.cols - 1:
+                    if self.v_walls[r][c] == 1:
+                        line_content += "|" 
+                    else:
+                        line_content += " "
+            
+            line_content += "|" # Viền phải cuối cùng
+            print(line_content)
+            
+            # --- In tường ngang bên dưới ---
+            if r < self.rows - 1: 
+                line_seperator = "  +"
+                for c in range(self.cols):
+                    if self.h_walls[r][c] == 1:
+                        line_seperator += "---+" # Có tường
+                    else:
+                        line_seperator += "   +" # Thông nhau
+                print(line_seperator)
+        
+        # 2. Vẽ cạnh đáy dưới cùng
+        print("  " + "+---" * self.cols + "+")
+        print("  Chú thích: S=Start, E=End, ●=Đường đi, |=Tường dọc, ---=Tường ngang\n")
+
 def bfs_maze(problem):
-    """Tìm đường đi ngắn nhất trong mê cung"""
+    """Tìm đường đi ngắn nhất bằng BFS"""
     queue = deque([(problem.start, [problem.start])])
     visited = {problem.start}
     
     while queue:
-        (row, col), path = queue.popleft()
+        current, path = queue.popleft()
         
-        # Kiểm tra đã đến đích chưa
-        if (row, col) == problem.goal:
+        if current == problem.goal:
             return path
         
-        # Khám phá các vị trí lân cận
-        for new_row in range(row - 1, row + 2):
-            for new_col in range(col - 1, col + 2):
-                # Chỉ xét 4 hướng (không xét đường chéo)
-                if abs(new_row - row) + abs(new_col - col) == 1:
-                    if problem.is_valid(new_row, new_col, visited):
-                        visited.add((new_row, new_col))
-                        queue.append(((new_row, new_col), path + [(new_row, new_col)]))
-    
+        for neighbor in problem.get_neighbors(current):
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append((neighbor, path + [neighbor]))
     return None
 
-# ===== THUẬT TOÁN DFS =====
-def dfs_maze(problem):
-    """Tìm đường đi bằng DFS"""
-    stack = [(problem.start, [problem.start])]
-    visited = {problem.start}
-    
-    while stack:
-        (row, col), path = stack.pop()
-        
-        if (row, col) == problem.goal:
-            return path
-        
-        for new_row in range(row - 1, row + 2):
-            for new_col in range(col - 1, col + 2):
-                if abs(new_row - row) + abs(new_col - col) == 1:
-                    if problem.is_valid(new_row, new_col, visited):
-                        visited.add((new_row, new_col))
-                        stack.append(((new_row, new_col), path + [(new_row, new_col)]))
-    
-    return None
-
-# ===== MAIN =====
+# --- CHẠY CHƯƠNG TRÌNH ---
 if __name__ == "__main__":
     problem = MazeProblem()
     
-    print("=" * 60)
-    print("BÀI 2: MÊ CUNG - TÌM ĐƯỜNG ĐI TỪ 0 ĐẾN A")
-    print("=" * 60)
-    
-    # In mê cung
-    problem.print_maze()
-    
-    # BFS
-    print("\n Tìm kiếm BFS (Breadth-First Search)...")
     bfs_path = bfs_maze(problem)
-    
+
     if bfs_path:
-        print(f" Tìm thấy đường đi!")
-        print(f" Vị trí: {' → '.join([str(pos) for pos in bfs_path])}")
-        print(f" Độ dài: {len(bfs_path) - 1} bước")
-        problem.print_maze(set(bfs_path))
+        print(f"Tìm thấy đường đi! Độ dài: {len(bfs_path)-1} bước")
+        
+        # Gọi hàm in dạng chữ (như hình bạn yêu cầu)
+        problem.print_maze(bfs_path)
+        
+        print("Chi tiết tọa độ:")
+        print(" -> ".join([str(pos) for pos in bfs_path]))
     else:
-        print(" Không tìm thấy đường đi")
-    
-    # DFS
-    print("\n Tìm kiếm DFS (Depth-First Search)...")
-    dfs_path = dfs_maze(problem)
-    
-    if dfs_path:
-        print(f" Tìm thấy đường đi!")
-        print(f" Vị trí: {' → '.join([str(pos) for pos in dfs_path])}")
-        print(f" Độ dài: {len(dfs_path) - 1} bước")
-    else:
+        print("Không tìm thấy đường đi!")
         print(" Không tìm thấy đường đi")
     
     print("\n" + "=" * 60)
