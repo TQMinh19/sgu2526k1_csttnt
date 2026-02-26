@@ -1,6 +1,11 @@
 import heapq
 import math
-name = r"D:\Python\classroom\SGU26k1_csttnt\Tuan02\lesson4\input_maze.txt"
+import os
+
+# Lấy đường dẫn tuyệt đối của file input_maze.txt trong cùng thư mục
+current_dir = os.path.dirname(os.path.abspath(__file__))
+name = os.path.join(current_dir, 'input_maze.txt')
+
 # Đọc dữ liệu từ file input_maze.txt
 with open(name, 'r') as f:
     lines = f.readlines()

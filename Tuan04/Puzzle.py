@@ -1,5 +1,10 @@
 import heapq # dùng để làm thuật toán A* nhanh hơn 
-name = r"D:\Python\classroom\SGU26k1_csttnt\Tuan02\lesson4\input_puzzle.txt"
+import os
+
+# Lấy đường dẫn tuyệt đối của file input_puzzle.txt trong cùng thư mục
+current_dir = os.path.dirname(os.path.abspath(__file__))
+name = os.path.join(current_dir, 'input_puzzle.txt')
+
 # đọc file
 with open(name,"r") as f:
      lines = f.readlines()
