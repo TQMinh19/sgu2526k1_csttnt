@@ -1,5 +1,6 @@
 import heapq # dùng để làm thuật toán A* nhanh hơn 
 import os
+import math
 
 # Lấy đường dẫn tuyệt đối của file input_puzzle.txt trong cùng thư mục
 current_dir = os.path.dirname(os.path.abspath(__file__))

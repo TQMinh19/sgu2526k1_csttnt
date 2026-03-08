@@ -6,7 +6,7 @@ from collections import deque, defaultdict
 # ===== ĐỊNH NGHĨA BÀI TOÁN =====
 class SearchProblem:
     def __init__(self):
-        # Đồ thị được biểu diễn bằng danh sách cạnh (adjacency list)
+        # Đồ thị được biểu diễn bằng danh sách cạnh 
         self.graph = {
             'A': ['B', 'C', 'F'],
             'B': ['A', 'C', 'E', 'F'],
@@ -97,19 +97,19 @@ if __name__ == "__main__":
     # Tìm kiếm BFS
     bfs_path = bfs_search(problem)
     if bfs_path:
-        print(f"\n✓ BFS: Đường đi từ {problem.initial_state} → {problem.goal_state}")
+        print(f"\n BFS: Đường đi từ {problem.initial_state} → {problem.goal_state}")
         print(f"  Đường đi: {' → '.join(bfs_path)}")
         print(f"  Chiều dài: {len(bfs_path) - 1} bước")
     else:
-        print(f"\n✗ BFS: Không tìm thấy đường đi")
+        print(f"\n BFS: Không tìm thấy đường đi")
     
     # Tìm kiếm DFS
     dfs_path = dfs_search(problem)
     if dfs_path:
-        print(f"\n✓ DFS: Đường đi từ {problem.initial_state} → {problem.goal_state}")
+        print(f"\n DFS: Đường đi từ {problem.initial_state} → {problem.goal_state}")
         print(f"  Đường đi: {' → '.join(dfs_path)}")
         print(f"  Chiều dài: {len(dfs_path) - 1} bước")
     else:
-        print(f"\n✗ DFS: Không tìm thấy đường đi")
+        print(f"\n DFS: Không tìm thấy đường đi")
     
     print("=" * 60)

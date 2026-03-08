@@ -79,7 +79,7 @@ class EightPuzzle:
             
             return len(path) - 1
         else:
-            print("✗ Không thể tìm được lời giải!")
+            print(" Không thể tìm được lời giải!")
             return -1
 
 

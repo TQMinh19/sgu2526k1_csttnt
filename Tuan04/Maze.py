@@ -112,9 +112,7 @@ path=find(parent,goal)
 print("Đường đi:")
 print(path)
 
-import networkx as nx
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+
 
 '''def ve_me_cung_o(n, m, wall_v, wall_h, path=None, start=None, goal=None):
     fig, ax = plt.subplots(figsize=(6,6))
@@ -153,6 +151,9 @@ from matplotlib.animation import FuncAnimation
     ax.axis("off")
     plt.title("Mê cung kiến đi")
     plt.show()  '''
+import networkx as nx
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 def animate_maze(n, m, wall_v, wall_h, order, path, start, goal):
     fig, ax = plt.subplots(figsize=(6,6))
     path_x = [p[1] + 0.5 for p in path]
